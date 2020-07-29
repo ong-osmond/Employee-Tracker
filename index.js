@@ -116,3 +116,69 @@ function viewEmployees() {
         start();
     });
 }
+
+function selectAddActions() {
+    inquirer
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "Would you like to add a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE"]
+        })
+        .then(function(answer) {
+            switch (answer.action) {
+                case ("DEPARTMENT"):
+                    addDepartment();
+                    break;
+                case ("ROLE"):
+                    addRole();
+                    break;
+                case ("EMPLOYEE"):
+                    addEmployee();
+                    break;
+                default:
+                    return "You have selected an invalid choice.";
+            }
+        });
+}
+
+function addDepartment() {
+    inquirer
+        .prompt({
+            name: "deparmentName",
+            type: "input",
+            message: "What is the name of the new department?"
+        })
+        .then(function(answer) {
+            connection.query(`insert into department (name) value ("${answer.deparmentName}")`, function(err, results) {
+                if (err) throw err;
+                console.log("Department inserted successfully.");
+                start();
+            })
+        })
+}
+
+function selectUpdateActions() {
+    inquirer
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "Would you like to update a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE"]
+        })
+        .then(function(answer) {
+            switch (answer.action) {
+                case ("DEPARTMENT"):
+                    updateDepartment();
+                    break;
+                case ("ROLE"):
+                    updateRole();
+                    break;
+                case ("EMPLOYEE"):
+                    updateEmployee();
+                    break;
+                default:
+                    return "You have selected an invalid choice.";
+            }
+        });
+}
