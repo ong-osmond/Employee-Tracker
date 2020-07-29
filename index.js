@@ -145,18 +145,99 @@ function selectAddActions() {
 function addDepartment() {
     inquirer
         .prompt({
-            name: "deparmentName",
+            name: "name",
             type: "input",
             message: "What is the name of the new department?"
         })
         .then(function(answer) {
-            connection.query(`insert into department (name) value ("${answer.deparmentName}")`, function(err, results) {
+            connection.query(`insert into department (name) value ("${answer.name}")`, function(err, results) {
                 if (err) throw err;
                 console.log("Department inserted successfully.");
                 start();
             })
         })
 }
+
+function addRole() {
+    connection.query(`select * from department`, function(err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([{
+                    name: "title",
+                    type: "input",
+                    message: "What is the name of the new role?"
+                },
+                {
+                    name: "salary",
+                    type: "input",
+                    message: "How much is the salary of the new role?"
+                },
+                {
+                    name: "department_id",
+                    type: "list",
+                    choices: function() {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choice = { name: results[i].name, value: results[i].id }
+                            choiceArray.push(choice);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which department does the the new role belong to?"
+                }
+            ])
+            .then(function(answer) {
+                connection.query(`insert into role (title, salary, department_id) value ("${answer.title}",${answer.salary},${answer.department_id})`, function(err, results) {
+                    if (err) throw err;
+                    console.log("Role inserted successfully.");
+                    start();
+                })
+            })
+    })
+}
+
+
+function addEmployee() {
+    connection.query(`select role.id, role.title, role.salary, role.department_id, department.name department_name
+                        from role
+                        join department on role.department_id = department.id
+                        order by role.title`, function(err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([{
+                    name: "first_name",
+                    type: "input",
+                    message: "What is the first name of the new employee?"
+                },
+                {
+                    name: "last_name",
+                    type: "input",
+                    message: "What is the last name of the new employee?"
+                },
+                {
+                    name: "role_id",
+                    type: "list",
+                    choices: function() {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id }
+                            choiceArray.push(choice);
+                        }
+                        return choiceArray;
+                    },
+                    message: "What is the role of the new employee?"
+                }
+            ])
+            .then(function(answer) {
+                connection.query(`insert into employee (first_name, last_name, role_id) value ("${answer.first_name}","${answer.last_name}",${answer.role_id})`, function(err, results) {
+                    if (err) throw err;
+                    console.log("Employee added successfully.");
+                    start();
+                })
+            })
+    })
+}
+
 
 function selectUpdateActions() {
     inquirer
