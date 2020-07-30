@@ -18,21 +18,34 @@ let choiceArray = [];
 //Declare queries
 const retrieveDepartmentsQuery = `select * from department order by name`;
 
-const retrieveEmployeesQuery = `select employee.id, employee.first_name, employee.last_name, role.title, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name, employee.role_id
-from employee
-join role on employee.role_id = role.id
-join department on role.department_id = department.id
-left join employee as manager on employee.manager_id = manager.id
-order by employee.last_name, employee.first_name;`;
-
 const retrieveRolesQuery = `select role.id, role.title, role.salary, role.department_id, department.name department_name
 from role
 join department on role.department_id = department.id
 order by role.title`;
 
+const retrieveEmployeesQuery = `select employee.id, employee.first_name, employee.last_name, role.title, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name
+from employee
+join role on employee.role_id = role.id
+join department on role.department_id = department.id
+left join employee as manager on employee.manager_id = manager.id
+order by employee.last_name, employee.first_name`;
 
+const retrieveManagersQuery = `select manager.id, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name
+from employee
+join role on employee.role_id = role.id
+join department on role.department_id = department.id
+join employee as manager on employee.manager_id = manager.id
+order by employee.last_name, employee.first_name`
+
+const retrieveEmployeesByManagersQuery = `select employee.id, employee.first_name, employee.last_name, role.title, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name, employee.manager_id
+from employee
+join role on employee.role_id = role.id
+join department on role.department_id = department.id
+join employee as manager on employee.manager_id = manager.id
+order by employee.last_name, employee.first_name`
+
+// Go to the main menu
 start();
-
 
 // function which prompts the user for what action they should take
 function start() {
@@ -60,7 +73,6 @@ function start() {
         });
 }
 
-
 function selectViewActions() {
     inquirer
         .prompt({
@@ -78,7 +90,7 @@ function selectViewActions() {
                     viewRoles();
                     break;
                 case ("EMPLOYEES"):
-                    viewEmployees();
+                    selectViewEmployees();
                     break;
                 default:
                     return "You have selected an invalid choice.";
@@ -106,6 +118,28 @@ function viewRoles() {
     });
 }
 
+function selectViewEmployees() {
+    inquirer
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "Would you like to view [ALL] employees or employees [BY MANAGER] ?",
+            choices: ["ALL", "BY MANAGER"]
+        })
+        .then(function(answer) {
+            switch (answer.action) {
+                case ("ALL"):
+                    viewEmployees();
+                    break;
+                case ("BY MANAGER"):
+                    viewEmployeesByManager();
+                    break;
+                default:
+                    return "You have selected an invalid choice.";
+            }
+        });
+}
+
 function viewEmployees() {
     const connection = getConnection();
     connection.query(retrieveEmployeesQuery, function(err, results) {
@@ -114,6 +148,42 @@ function viewEmployees() {
         connection.end();
         start();
     });
+}
+
+function viewEmployeesByManager() {
+    const connection = getConnection();
+    connection.query(retrieveManagersQuery, function(err, results) {
+        if (err) throw err; {
+            if (typeof results !== 'undefined' && results.length > 0) {
+                inquirer
+                    .prompt([{
+                        name: "manager_id",
+                        type: "list",
+                        choices: function() {
+                            var choiceArray = [];
+                            for (var i = 0; i < results.length; i++) {
+                                choice = { name: `${results[i].manager_name} (${results[i].department_name})`, value: results[i].id }
+                                choiceArray.push(choice);
+                            }
+                            return choiceArray;
+                        },
+                        message: "Which manager?"
+                    }])
+                    .then(function(answer) {
+                        connection.query(`select employees.* from (${retrieveEmployeesByManagersQuery}) as employees where employees.manager_id = ${answer.manager_id};`, function(err, results) {
+                            if (err) throw err;
+                            console.table(results);
+                            connection.end();
+                            start();
+                        })
+                    })
+            } else {
+                console.log("There are no managers.");
+                connection.end();
+                start();
+            }
+        }
+    })
 }
 
 function selectAddActions() {
@@ -307,6 +377,7 @@ function updateEmployeeRole() {
                             connection.query(`Update employee set role_id = ${role.role_id} where id = ${employee.employee_id}`, function(err, results) {
                                 if (err) throw err;
                                 connection.end();
+                                console.log("Employee updated successfully.");
                                 start();
                             })
                         })
@@ -334,7 +405,7 @@ function updateEmployeeManager() {
                 message: "Which employee requires a manager update?"
             }])
             .then(function(employee) {
-                connection.query(retrieveEmployeesQuery, function(err, results) {
+                connection.query(`select managers.* from (${retrieveEmployeesQuery}) as managers where id <> ${employee.employee_id};`, function(err, results) {
                     if (err) throw err;
                     inquirer
                         .prompt([{
@@ -355,6 +426,7 @@ function updateEmployeeManager() {
                             connection.query(`Update employee set manager_id = ${manager.manager_id} where id = ${employee.employee_id}`, function(err, results) {
                                 if (err) throw err;
                                 connection.end();
+                                console.log("Employee updated successfully.");
                                 start();
                             })
                         })
