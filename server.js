@@ -23,8 +23,8 @@ function start() {
         .prompt({
             name: "action",
             type: "list",
-            message: "Would you like to [VIEW], [ADD] or [UPDATE] departments, roles or employees? (CTRL+C to exit.)",
-            choices: ["VIEW", "ADD", "UPDATE"]
+            message: "Would you like to [VIEW], [ADD], [UPDATE] or [DELETE] departments, roles or employees? (CTRL+C to exit.)",
+            choices: ["VIEW", "ADD", "UPDATE", "DELETE"]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -36,6 +36,9 @@ function start() {
                     break;
                 case ("UPDATE"):
                     selectUpdateActions();
+                    break;
+                case ("DELETE"):
+                    selectDeleteActions();
                     break;
                 default:
                     return "You have selected an invalid action.";
@@ -400,6 +403,116 @@ function updateEmployeeManager() {
                                 start();
                             })
                         })
+                })
+            })
+    })
+}
+
+function selectDeleteActions() {
+    inquirer
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "Would you like to delete a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE"]
+        })
+        .then(function(answer) {
+            switch (answer.action) {
+                case ("DEPARTMENT"):
+                    deleteDepartment();
+                    break;
+                case ("ROLE"):
+                    deleteRole();
+                    break;
+                case ("EMPLOYEE"):
+                    deleteEmployee();
+                    break;
+                default:
+                    return "You have selected an invalid choice.";
+            }
+        });
+}
+
+function deleteDepartment() {
+    const connection = getConnection();
+    connection.query(queries.retrieveDepartmentsQuery, function(err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([{
+                name: "department_id",
+                type: "list",
+                choices: function() {
+                    var choiceArray = [];
+                    for (var i = 0; i < results.length; i++) {
+                        choice = { name: `${results[i].name}`, value: results[i].id }
+                        choiceArray.push(choice);
+                    }
+                    return choiceArray;
+                },
+                message: "Which department record is to be deleted? (Note: You cannot remove a department that currently has employees.)"
+            }]).then(function(answer) {
+                connection.query(`Delete from department where id = ${answer.department_id}`, function(err, results) {
+                    if (err) throw err;
+                    connection.end();
+                    console.log("Department removed successfully.");
+                    start();
+                })
+            })
+    })
+}
+
+
+function deleteRole() {
+    const connection = getConnection();
+    connection.query(queries.retrieveRolesQuery, function(err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([{
+                name: "role_id",
+                type: "list",
+                choices: function() {
+                    var choiceArray = [];
+                    for (var i = 0; i < results.length; i++) {
+                        choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id }
+                        choiceArray.push(choice);
+                    }
+                    return choiceArray;
+                },
+                message: "Which role record is to be deleted? (Note: You cannot remove a role that is currently assigned to an employee.)"
+            }]).then(function(answer) {
+                connection.query(`Delete from role where id = ${answer.role_id}`, function(err, results) {
+                    if (err) throw err;
+                    connection.end();
+                    console.log("Role removed successfully.");
+                    start();
+                })
+            })
+    })
+}
+
+function deleteEmployee() {
+    const connection = getConnection();
+    connection.query(queries.retrieveEmployeesQuery, function(err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([{
+                name: "employee_id",
+                type: "list",
+                choices: function() {
+                    var choiceArray = [];
+                    for (var i = 0; i < results.length; i++) {
+                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                        choiceArray.push(choice);
+                    }
+                    return choiceArray;
+                },
+                message: "Which employee record is to be deleted? (Note: You cannot remove a manager record with current staff members.)"
+            }]).then(function(answer) {
+                connection.query(`Delete from employee where id = ${answer.employee_id}`, function(err, results) {
+                    if (err) throw err;
+                    connection.end();
+                    console.log("Employee record removed successfully.");
+                    start();
                 })
             })
     })
