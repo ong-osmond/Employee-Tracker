@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const queries = require("./queryDB");
 //const cTable = require("console.table");
 
 // create the connection information for the sql database
@@ -12,37 +13,6 @@ function getConnection() {
         database: "employeesDB"
     });
 }
-
-let choiceArray = [];
-
-//Declare queries
-const retrieveDepartmentsQuery = `select * from department order by name`;
-
-const retrieveRolesQuery = `select role.id, role.title, role.salary, role.department_id, department.name department_name
-from role
-join department on role.department_id = department.id
-order by role.title`;
-
-const retrieveEmployeesQuery = `select employee.id, employee.first_name, employee.last_name, role.title, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name
-from employee
-join role on employee.role_id = role.id
-join department on role.department_id = department.id
-left join employee as manager on employee.manager_id = manager.id
-order by employee.last_name, employee.first_name`;
-
-const retrieveManagersQuery = `select manager.id, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name
-from employee
-join role on employee.role_id = role.id
-join department on role.department_id = department.id
-join employee as manager on employee.manager_id = manager.id
-order by employee.last_name, employee.first_name`
-
-const retrieveEmployeesByManagersQuery = `select employee.id, employee.first_name, employee.last_name, role.title, concat(manager.first_name," ",manager.last_name) as manager_name, department.name department_name, employee.manager_id
-from employee
-join role on employee.role_id = role.id
-join department on role.department_id = department.id
-join employee as manager on employee.manager_id = manager.id
-order by employee.last_name, employee.first_name`
 
 // Go to the main menu
 start();
@@ -100,7 +70,7 @@ function selectViewActions() {
 
 function viewDepartments() {
     const connection = getConnection();
-    connection.query(retrieveDepartmentsQuery, function(err, results) {
+    connection.query(queries.retrieveDepartmentsQuery, function(err, results) {
         if (err) throw err;
         console.table(results);
         connection.end();
@@ -110,7 +80,7 @@ function viewDepartments() {
 
 function viewRoles() {
     const connection = getConnection();
-    connection.query(retrieveRolesQuery, function(err, results) {
+    connection.query(queries.retrieveRolesQuery, function(err, results) {
         if (err) throw err;
         console.table(results);
         connection.end();
@@ -142,7 +112,7 @@ function selectViewEmployees() {
 
 function viewEmployees() {
     const connection = getConnection();
-    connection.query(retrieveEmployeesQuery, function(err, results) {
+    connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
         console.table(results);
         connection.end();
@@ -152,7 +122,7 @@ function viewEmployees() {
 
 function viewEmployeesByManager() {
     const connection = getConnection();
-    connection.query(retrieveManagersQuery, function(err, results) {
+    connection.query(queries.retrieveManagersQuery, function(err, results) {
         if (err) throw err; {
             if (typeof results !== 'undefined' && results.length > 0) {
                 inquirer
@@ -170,7 +140,7 @@ function viewEmployeesByManager() {
                         message: "Which manager?"
                     }])
                     .then(function(answer) {
-                        connection.query(`select employees.* from (${retrieveEmployeesByManagersQuery}) as employees where employees.manager_id = ${answer.manager_id};`, function(err, results) {
+                        connection.query(`select employees.* from (${queries.retrieveEmployeesByManagersQuery}) as employees where employees.manager_id = ${answer.manager_id};`, function(err, results) {
                             if (err) throw err;
                             console.table(results);
                             connection.end();
@@ -233,7 +203,7 @@ function addDepartment() {
 
 function addRole() {
     const connection = getConnection();
-    connection.query(retrieveDepartmentsQuery, function(err, results) {
+    connection.query(queries.retrieveDepartmentsQuery, function(err, results) {
         if (err) throw err;
         inquirer
             .prompt([{
@@ -276,7 +246,7 @@ function addRole() {
 
 function addEmployee() {
     const connection = getConnection();
-    connection.query(retrieveRolesQuery, function(err, results) {
+    connection.query(queries.retrieveRolesQuery, function(err, results) {
         if (err) throw err;
         inquirer
             .prompt([{
@@ -340,7 +310,7 @@ function selectUpdateActions() {
 
 function updateEmployeeRole() {
     const connection = getConnection();
-    connection.query(retrieveEmployeesQuery, function(err, results) {
+    connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
         inquirer
             .prompt([{
@@ -357,7 +327,7 @@ function updateEmployeeRole() {
                 message: "Which employee requires a role update?"
             }])
             .then(function(employee) {
-                connection.query(retrieveRolesQuery, function(err, results) {
+                connection.query(queries.retrieveRolesQuery, function(err, results) {
                     if (err) throw err;
                     inquirer
                         .prompt([{
@@ -388,7 +358,7 @@ function updateEmployeeRole() {
 
 function updateEmployeeManager() {
     const connection = getConnection();
-    connection.query(retrieveEmployeesQuery, function(err, results) {
+    connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
         inquirer
             .prompt([{
@@ -405,7 +375,7 @@ function updateEmployeeManager() {
                 message: "Which employee requires a manager update?"
             }])
             .then(function(employee) {
-                connection.query(`select managers.* from (${retrieveEmployeesQuery}) as managers where id <> ${employee.employee_id};`, function(err, results) {
+                connection.query(`select managers.* from (${queries.retrieveEmployeesQuery}) as managers where id <> ${employee.employee_id};`, function(err, results) {
                     if (err) throw err;
                     inquirer
                         .prompt([{
