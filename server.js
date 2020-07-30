@@ -52,7 +52,7 @@ function selectViewActions() {
             name: "action",
             type: "list",
             message: "Would you like to view [DEPARTMENTS], [ROLES] or [EMPLOYEES]?",
-            choices: ["DEPARTMENTS", "ROLES", "EMPLOYEES"]
+            choices: ["DEPARTMENTS", "ROLES", "EMPLOYEES", "Go back."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -64,6 +64,9 @@ function selectViewActions() {
                     break;
                 case ("EMPLOYEES"):
                     selectViewEmployees();
+                    break;
+                case ("Go back."):
+                    start();
                     break;
                 default:
                     return "You have selected an invalid choice.";
@@ -97,7 +100,7 @@ function selectViewEmployees() {
             name: "action",
             type: "list",
             message: "Would you like to view [ALL] employees or employees [BY MANAGER] ?",
-            choices: ["ALL", "BY MANAGER"]
+            choices: ["ALL", "BY MANAGER", "Go back."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -106,6 +109,9 @@ function selectViewEmployees() {
                     break;
                 case ("BY MANAGER"):
                     viewEmployeesByManager();
+                    break;
+                case ("Go back"):
+                    start();
                     break;
                 default:
                     return "You have selected an invalid choice.";
@@ -165,7 +171,7 @@ function selectAddActions() {
             name: "action",
             type: "list",
             message: "Would you like to add a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
-            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE"]
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "Go back."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -177,6 +183,9 @@ function selectAddActions() {
                     break;
                 case ("EMPLOYEE"):
                     addEmployee();
+                    break;
+                case ("Go back."):
+                    start();
                     break;
                 default:
                     return "You have selected an invalid choice.";
@@ -295,7 +304,7 @@ function selectUpdateActions() {
             name: "action",
             type: "list",
             message: "Would you like to update an employee's [ROLE] or [MANAGER]?",
-            choices: ["ROLE", "MANAGER"]
+            choices: ["ROLE", "MANAGER", "Go back."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -304,6 +313,9 @@ function selectUpdateActions() {
                     break;
                 case ("MANAGER"):
                     updateEmployeeManager();
+                    break;
+                case ("Go back."):
+                    start();
                     break;
                 default:
                     return "You have selected an invalid choice.";
@@ -414,7 +426,7 @@ function selectDeleteActions() {
             name: "action",
             type: "list",
             message: "Would you like to delete a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
-            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE"]
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "Go back."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -426,6 +438,9 @@ function selectDeleteActions() {
                     break;
                 case ("EMPLOYEE"):
                     deleteEmployee();
+                    break;
+                case ("Go back."):
+                    start();
                     break;
                 default:
                     return "You have selected an invalid choice.";
@@ -460,7 +475,6 @@ function deleteDepartment() {
             })
     })
 }
-
 
 function deleteRole() {
     const connection = getConnection();
