@@ -40,12 +40,10 @@ join department on role.department_id = department.id
 left join employee as manager on employee.manager_id = manager.id
 order by employee.last_name, employee.first_name`;
 
-const retrieveManagersQuery = `select manager.id
+const retrieveManagersQuery = `select distinct manager.id
 , concat(manager.first_name," ",manager.last_name) as manager_name
-, department.name department_name
 from employee
 join role on employee.role_id = role.id
-join department on role.department_id = department.id
 join employee as manager on employee.manager_id = manager.id
 order by employee.last_name, employee.first_name`;
 
@@ -54,7 +52,8 @@ const retrieveEmployeesByManagersQuery = `select employee.id
 , employee.last_name
 , role.title
 , concat(manager.first_name," ",manager.last_name) as manager_name
-, department.name department_name, employee.manager_id
+, department.name department_name
+, employee.manager_id
 from employee
 join role on employee.role_id = role.id
 join department on role.department_id = department.id

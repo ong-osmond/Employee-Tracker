@@ -3,7 +3,7 @@
 const mainQuestion = {
     name: "action",
     type: "list",
-    message: "Would you like to [VIEW], [ADD], [UPDATE] or [DELETE] departments, roles or employees? (CTRL+C to exit.)",
+    message: "Welcome to the Employee Tracker app. \n Would you like to [VIEW], [ADD], [UPDATE] or [DELETE] departments, roles or employees? \n (Press CTRL+C at any time to exit.)",
     choices: ["VIEW", "ADD", "UPDATE", "DELETE", "EXIT"]
 };
 

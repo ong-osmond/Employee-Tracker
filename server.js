@@ -131,7 +131,7 @@ function viewEmployeesByManager() {
                         choices: function() {
                             let choiceArray = [];
                             for (var i = 0; i < results.length; i++) {
-                                choice = { name: `${results[i].manager_name} (${results[i].department_name})`, value: results[i].id };
+                                choice = { name: `${results[i].manager_name}`, value: results[i].id };
                                 choiceArray.push(choice);
                             }
                             return choiceArray;
