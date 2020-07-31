@@ -2,25 +2,51 @@
 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const queries = require("./queryDB");
-const questions = require("./questions");
+const queries = require("./lib/queryDB");
+const questions = require("./lib/questions");
 const cTable = require("console.table");
 
-// create the connection information for the sql database
-function getConnection() {
-    return mysql.createConnection({
-        host: "localhost",
-        port: 3306,
-        user: "root",
-        password: "root",
-        database: "employeesDB"
-    });
+// Initialise the connection object
+let connectionSettings = {
+    host: "localhost",
+    port: 3306,
+    user: "",
+    password: "",
+    database: "employeesDB"
+};
+
+// Ask the user to enter database user and password info
+function initialiseApp() {
+    inquirer.prompt([questions.user,
+            questions.password
+        ])
+        .then(function(answer) {
+            connectionSettings.user = answer.user;
+            connectionSettings.password = answer.password;
+            let initialConnection = mysql.createConnection(connectionSettings);
+            initialConnection.connect(function(err) {
+                if (err) {
+                    console.log(err.code);
+                    initialConnection.end();
+                    initialiseApp();
+                } else {
+                    console.log("Connected to the database succesfully.");
+                    initialConnection.end();
+                    start();
+                }
+            });
+        })
+};
+
+// Create the connection information for the SQL database
+function getConnection(connectionSettings) {
+    return mysql.createConnection(connectionSettings);
 }
 
 // Go to the main menu
-start();
+initialiseApp();
 
-// function which prompts the user for what action they should take
+// Main menu which prompts the user for what action they should take
 function start() {
     inquirer
         .prompt(questions.mainQuestion)
@@ -46,6 +72,7 @@ function start() {
         });
 }
 
+// Menu for VIEW action
 function selectViewActions() {
     inquirer
         .prompt(questions.selectViewActions)
@@ -60,7 +87,7 @@ function selectViewActions() {
                 case ("EMPLOYEES"):
                     selectViewEmployees();
                     break;
-                case ("GO BACK."):
+                case ("< GO BACK"):
                     start();
                     break;
                 default:
@@ -69,26 +96,31 @@ function selectViewActions() {
         });
 }
 
+// View all departments
 function viewDepartments() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveDepartmentsQuery, function(err, results) {
         if (err) throw err;
+        console.log("");
         console.table(results);
         connection.end();
         start();
     });
 }
 
+// View all roles
 function viewRoles() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveRolesQuery, function(err, results) {
         if (err) throw err;
+        console.log("");
         console.table(results);
         connection.end();
         start();
     });
 }
 
+// Menu for viewing employees
 function selectViewEmployees() {
     inquirer
         .prompt(questions.selectViewEmployees)
@@ -100,7 +132,7 @@ function selectViewEmployees() {
                 case ("BY MANAGER"):
                     viewEmployeesByManager();
                     break;
-                case ("GO BACK."):
+                case ("< GO BACK"):
                     start();
                     break;
                 default:
@@ -109,18 +141,21 @@ function selectViewEmployees() {
         });
 }
 
+// View all employees
 function viewEmployees() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
+        console.log("");
         console.table(results);
         connection.end();
         start();
     });
 }
 
+// View employees by Manager
 function viewEmployeesByManager() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveManagersQuery, function(err, results) {
         if (err) throw err; {
             if (typeof results !== 'undefined' && results.length > 0) {
@@ -141,6 +176,7 @@ function viewEmployeesByManager() {
                     .then(function(answer) {
                         connection.query(`select employees.* from (${queries.retrieveEmployeesByManagersQuery}) as employees where employees.manager_id = ${answer.manager_id};`, function(err, results) {
                             if (err) throw err;
+                            console.log("");
                             console.table(results);
                             connection.end();
                             start();
@@ -155,6 +191,7 @@ function viewEmployeesByManager() {
     });
 }
 
+// Menu for ADD action
 function selectAddActions() {
     inquirer
         .prompt(questions.selectAddActions)
@@ -169,7 +206,7 @@ function selectAddActions() {
                 case ("EMPLOYEE"):
                     addEmployee();
                     break;
-                case ("GO BACK."):
+                case ("< GO BACK"):
                     start();
                     break;
                 default:
@@ -178,8 +215,9 @@ function selectAddActions() {
         });
 }
 
+// Add a department
 function addDepartment() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     inquirer
         .prompt(questions.addDepartment)
         .then(function(answer) {
@@ -194,21 +232,14 @@ function addDepartment() {
         });
 }
 
+// Add a role
 function addRole() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveDepartmentsQuery, function(err, results) {
         if (err) throw err;
         inquirer
-            .prompt([{
-                    name: "title",
-                    type: "input",
-                    message: "What is the name of the new role?"
-                },
-                {
-                    name: "salary",
-                    type: "input",
-                    message: "How much is the salary of the new role?"
-                },
+            .prompt([questions.title,
+                questions.salary,
                 {
                     name: "department_id",
                     type: "list",
@@ -236,22 +267,14 @@ function addRole() {
     });
 }
 
-
+// Add an employee
 function addEmployee() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveRolesQuery, function(err, results) {
         if (err) throw err;
         inquirer
-            .prompt([{
-                    name: "first_name",
-                    type: "input",
-                    message: "What is the first name of the new employee?"
-                },
-                {
-                    name: "last_name",
-                    type: "input",
-                    message: "What is the last name of the new employee?"
-                },
+            .prompt([questions.firstName,
+                questions.lastName,
                 {
                     name: "role_id",
                     type: "list",
@@ -277,7 +300,7 @@ function addEmployee() {
                                 choices: function() {
                                     let choiceArray = [];
                                     for (var i = 0; i < results.length; i++) {
-                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
+                                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                                         choiceArray.push(choice);
                                     }
                                     choiceArray.push({ name: `No manager.`, value: null }); //No manager
@@ -301,7 +324,7 @@ function addEmployee() {
     });
 }
 
-
+// Menu for UPDATE action
 function selectUpdateActions() {
     inquirer
         .prompt(questions.selectUpdateActions)
@@ -313,7 +336,7 @@ function selectUpdateActions() {
                 case ("EMPLOYEE MANAGER"):
                     updateEmployeeManager();
                     break;
-                case ("GO BACK."):
+                case ("< GO BACK"):
                     start();
                     break;
                 default:
@@ -322,8 +345,9 @@ function selectUpdateActions() {
         });
 }
 
+// Update employee's role
 function updateEmployeeRole() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
         inquirer
@@ -336,13 +360,13 @@ function updateEmployeeRole() {
                         choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
-                    choiceArray.push("GO BACK.");
+                    choiceArray.push("< GO BACK");
                     return choiceArray;
                 },
                 message: "Which employee requires a role update?"
             }])
             .then(function(employee) {
-                if (employee.employee_id == "GO BACK.") {
+                if (employee.employee_id == "< GO BACK") {
                     connection.end();
                     selectUpdateActions();
                 } else {
@@ -376,8 +400,9 @@ function updateEmployeeRole() {
     });
 }
 
+// Update employee's manager
 function updateEmployeeManager() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
         inquirer
@@ -390,13 +415,13 @@ function updateEmployeeManager() {
                         choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
-                    choiceArray.push("GO BACK.");
+                    choiceArray.push("< GO BACK");
                     return choiceArray;
                 },
                 message: "Which employee requires a manager update?"
             }])
             .then(function(employee) {
-                if (employee.employee_id == "GO BACK.") {
+                if (employee.employee_id == "< GO BACK") {
                     connection.end();
                     selectUpdateActions();
                 } else {
@@ -431,6 +456,7 @@ function updateEmployeeManager() {
     });
 }
 
+// Menu for DELETE action
 function selectDeleteActions() {
     inquirer
         .prompt(questions.selectDeleteActions)
@@ -445,7 +471,7 @@ function selectDeleteActions() {
                 case ("EMPLOYEE"):
                     deleteEmployee();
                     break;
-                case ("GO BACK."):
+                case ("< GO BACK"):
                     start();
                     break;
                 default:
@@ -454,8 +480,9 @@ function selectDeleteActions() {
         });
 }
 
+// Delete a department
 function deleteDepartment() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveDepartmentsQuery, function(err, results) {
         if (err) throw err;
         inquirer
@@ -468,12 +495,12 @@ function deleteDepartment() {
                         choice = { name: `${results[i].name}`, value: results[i].id };
                         choiceArray.push(choice);
                     }
-                    choiceArray.push("GO BACK.");
+                    choiceArray.push("< GO BACK");
                     return choiceArray;
                 },
                 message: "Which department record is to be deleted? (Note: You cannot remove a department that currently has employees.)"
             }]).then(function(answer) {
-                if (answer == "GO BACK.") {
+                if (answer == "< GO BACK") {
                     connection.end();
                     selectDeleteActions();
                 } else {
@@ -493,8 +520,9 @@ function deleteDepartment() {
     });
 }
 
+// Delete a role
 function deleteRole() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveRolesQuery, function(err, results) {
         if (err) throw err;
         inquirer
@@ -507,12 +535,12 @@ function deleteRole() {
                         choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
-                    choiceArray.push("GO BACK.");
+                    choiceArray.push("< GO BACK");
                     return choiceArray;
                 },
                 message: "Which role record is to be deleted? (Note: You cannot remove a role that is currently assigned to an employee.)"
             }]).then(function(answer) {
-                if (answer == "GO BACK.") {
+                if (answer == "< GO BACK") {
                     connection.end();
                     selectDeleteActions();
                 } else {
@@ -532,8 +560,9 @@ function deleteRole() {
     });
 }
 
+// Delete an employee
 function deleteEmployee() {
-    const connection = getConnection();
+    const connection = getConnection(connectionSettings);
     connection.query(queries.retrieveEmployeesQuery, function(err, results) {
         if (err) throw err;
         inquirer
@@ -546,12 +575,12 @@ function deleteEmployee() {
                         choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
-                    choiceArray.push("GO BACK.");
+                    choiceArray.push("< GO BACK");
                     return choiceArray;
                 },
                 message: "Which employee record is to be deleted? (Note: You cannot remove a manager record with current staff members.)"
             }]).then(function(answer) {
-                if (answer == "GO BACK.") {
+                if (answer == "< GO BACK") {
                     connection.end();
                     selectDeleteActions();
                 } else {

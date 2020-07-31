@@ -15,7 +15,7 @@ CREATE TABLE department(
 CREATE TABLE role(
     id INT NOT NULL AUTO_INCREMENT,
     title VARCHAR(30) NOT NULL,
-    salary DECIMAL NOT NULL,
+    salary DECIMAL(10,2) NOT NULL,
     department_id int NOT NULL,
     INDEX dept_ind(department_id),
     FOREIGN KEY(department_id) REFERENCES department(id),
@@ -44,10 +44,10 @@ INSERT INTO role(title, salary, department_id)
 VALUES
     ("Archer", 80, (select id from department where name = "Elves")),
     ("Axeman", 80, (select id from department where name = "Dwarves")),
-    ("Gardener", 50, (select id from department where name = "Hobbits")),
+    ("Gardener", 49.99, (select id from department where name = "Hobbits")),
     ("King", 100, (select id from department where name = "Gondor")),
     ("Ranger", 90, (select id from department where name = "Gondor")),
-    ("Ring-bearer", 90, (select id from department where name = "Hobbits")),
+    ("Ring-bearer", 100, (select id from department where name = "Hobbits")),
     ("Wizard", 100, (select id from department where name = "Wizards"))
 ;
 
@@ -64,7 +64,7 @@ VALUES
     ("Aragorn", "Son of Arathorn", (select id from role where title = "Ranger"), null),
     ("Boromir", "Son of Denethor", (select id from role where title = "Ranger"), null),
     ("Gimli", "Son of Gloin", (select id from role where title = "Axeman"), null),
-    ("Gandalf", "The White", (select id from role where title = "Wizard"), null)
+    ("Gandalf", "The Grey", (select id from role where title = "Wizard"), null)
 ;
 
 INSERT INTO employee(first_name, last_name, role_id, manager_id)
