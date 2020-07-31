@@ -1,7 +1,8 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const queries = require("./queryDB");
-//const cTable = require("console.table");
+const questions = require("./questions");
+const cTable = require("console.table");
 
 // create the connection information for the sql database
 function getConnection() {
@@ -20,12 +21,7 @@ start();
 // function which prompts the user for what action they should take
 function start() {
     inquirer
-        .prompt({
-            name: "action",
-            type: "list",
-            message: "Would you like to [VIEW], [ADD], [UPDATE] or [DELETE] departments, roles or employees? (CTRL+C to exit.)",
-            choices: ["VIEW", "ADD", "UPDATE", "DELETE", "EXIT"]
-        })
+        .prompt(questions.mainQuestion)
         .then(function(answer) {
             switch (answer.action) {
                 case ("VIEW"):
@@ -50,12 +46,7 @@ function start() {
 
 function selectViewActions() {
     inquirer
-        .prompt({
-            name: "action",
-            type: "list",
-            message: "Would you like to view [DEPARTMENTS], [ROLES] or [EMPLOYEES]?",
-            choices: ["DEPARTMENTS", "ROLES", "EMPLOYEES", "GO BACK."]
-        })
+        .prompt(questions.selectViewActions)
         .then(function(answer) {
             switch (answer.action) {
                 case ("DEPARTMENTS"):
@@ -98,12 +89,7 @@ function viewRoles() {
 
 function selectViewEmployees() {
     inquirer
-        .prompt({
-            name: "action",
-            type: "list",
-            message: "Would you like to view [ALL] employees or employees [BY MANAGER] ?",
-            choices: ["ALL", "BY MANAGER", "GO BACK."]
-        })
+        .prompt(questions.selectViewEmployees)
         .then(function(answer) {
             switch (answer.action) {
                 case ("ALL"):
@@ -112,7 +98,7 @@ function selectViewEmployees() {
                 case ("BY MANAGER"):
                     viewEmployeesByManager();
                     break;
-                case ("Go back"):
+                case ("GO BACK"):
                     start();
                     break;
                 default:
@@ -169,12 +155,7 @@ function viewEmployeesByManager() {
 
 function selectAddActions() {
     inquirer
-        .prompt({
-            name: "action",
-            type: "list",
-            message: "Would you like to add a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
-            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "GO BACK."]
-        })
+        .prompt(questions.selectAddActions)
         .then(function(answer) {
             switch (answer.action) {
                 case ("DEPARTMENT"):
@@ -198,11 +179,7 @@ function selectAddActions() {
 function addDepartment() {
     const connection = getConnection();
     inquirer
-        .prompt({
-            name: "name",
-            type: "input",
-            message: "What is the name of the new department?"
-        })
+        .prompt(questions.addDepartment)
         .then(function(answer) {
             connection.query(`
             insert into department(name) value("${answer.name}")
@@ -325,12 +302,7 @@ function addEmployee() {
 
 function selectUpdateActions() {
     inquirer
-        .prompt({
-            name: "action",
-            type: "list",
-            message: "Would you like to update an employee's [ROLE] or [MANAGER]?",
-            choices: ["EMPLOYEE ROLE", "EMPLOYEE MANAGER", "GO BACK."]
-        })
+        .prompt(questions.selectUpdateActions)
         .then(function(answer) {
             switch (answer.action) {
                 case ("EMPLOYEE ROLE"):
@@ -459,12 +431,7 @@ function updateEmployeeManager() {
 
 function selectDeleteActions() {
     inquirer
-        .prompt({
-            name: "action",
-            type: "list",
-            message: "Would you like to delete a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
-            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "GO BACK."]
-        })
+        .prompt(questions.selectDeleteActions)
         .then(function(answer) {
             switch (answer.action) {
                 case ("DEPARTMENT"):
