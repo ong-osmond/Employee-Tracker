@@ -98,7 +98,7 @@ function selectViewEmployees() {
                 case ("BY MANAGER"):
                     viewEmployeesByManager();
                     break;
-                case ("GO BACK"):
+                case ("GO BACK."):
                     start();
                     break;
                 default:
