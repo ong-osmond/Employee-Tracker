@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const queries = require("./queryDB");
@@ -129,7 +131,7 @@ function viewEmployeesByManager() {
                         choices: function() {
                             let choiceArray = [];
                             for (var i = 0; i < results.length; i++) {
-                                choice = { name: `${results[i].manager_name} (${results[i].department_name})`, value: results[i].id }
+                                choice = { name: `${results[i].manager_name} (${results[i].department_name})`, value: results[i].id };
                                 choiceArray.push(choice);
                             }
                             return choiceArray;
@@ -142,15 +144,15 @@ function viewEmployeesByManager() {
                             console.table(results);
                             connection.end();
                             start();
-                        })
-                    })
+                        });
+                    });
             } else {
                 console.log("There are no managers.");
                 connection.end();
                 start();
             }
         }
-    })
+    });
 }
 
 function selectAddActions() {
@@ -188,8 +190,8 @@ function addDepartment() {
                 console.log("Department inserted successfully.");
                 connection.end();
                 start();
-            })
-        })
+            });
+        });
 }
 
 function addRole() {
@@ -213,7 +215,7 @@ function addRole() {
                     choices: function() {
                         let choiceArray = [];
                         for (var i = 0; i < results.length; i++) {
-                            choice = { name: results[i].name, value: results[i].id }
+                            choice = { name: results[i].name, value: results[i].id };
                             choiceArray.push(choice);
                         }
                         return choiceArray;
@@ -229,9 +231,9 @@ function addRole() {
                     console.log("Role inserted successfully.");
                     connection.end();
                     start();
-                })
-            })
-    })
+                });
+            });
+    });
 }
 
 
@@ -256,7 +258,7 @@ function addEmployee() {
                     choices: function() {
                         let choiceArray = [];
                         for (var i = 0; i < results.length; i++) {
-                            choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id }
+                            choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id };
                             choiceArray.push(choice);
                         }
                         return choiceArray;
@@ -275,7 +277,7 @@ function addEmployee() {
                                 choices: function() {
                                     let choiceArray = [];
                                     for (var i = 0; i < results.length; i++) {
-                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                                         choiceArray.push(choice);
                                     }
                                     choiceArray.push({ name: `No manager.`, value: null }); //No manager
@@ -291,12 +293,12 @@ function addEmployee() {
                                         console.log("Employee added successfully.");
                                         connection.end();
                                         start();
-                                    })
-                                })
-                    })
+                                    });
+                                });
+                    });
                 }
-            )
-    })
+            );
+    });
 }
 
 
@@ -331,7 +333,7 @@ function updateEmployeeRole() {
                 choices: function() {
                     let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
-                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
                     choiceArray.push("GO BACK.");
@@ -353,7 +355,7 @@ function updateEmployeeRole() {
                                 choices: function() {
                                     let choiceArray = [];
                                     for (var i = 0; i < results.length; i++) {
-                                        choice = { name: `New role: ${results[i].title} (${results[i].department_name})`, value: results[i].id }
+                                        choice = { name: `New role: ${results[i].title} (${results[i].department_name})`, value: results[i].id };
                                         choiceArray.push(choice);
                                     }
                                     return choiceArray;
@@ -366,12 +368,12 @@ function updateEmployeeRole() {
                                     connection.end();
                                     console.log("Employee updated successfully.");
                                     start();
-                                })
-                            })
-                    })
+                                });
+                            });
+                    });
                 }
-            })
-    })
+            });
+    });
 }
 
 function updateEmployeeManager() {
@@ -385,7 +387,7 @@ function updateEmployeeManager() {
                 choices: function() {
                     let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
-                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
                     choiceArray.push("GO BACK.");
@@ -407,7 +409,7 @@ function updateEmployeeManager() {
                                 choices: function() {
                                     let choiceArray = [];
                                     for (var i = 0; i < results.length; i++) {
-                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                                         choiceArray.push(choice);
                                     }
                                     choiceArray.push({ name: `No manager.`, value: null }); //No manager
@@ -421,12 +423,12 @@ function updateEmployeeManager() {
                                     connection.end();
                                     console.log("Employee updated successfully.");
                                     start();
-                                })
-                            })
-                    })
+                                });
+                            });
+                    });
                 }
-            })
-    })
+            });
+    });
 }
 
 function selectDeleteActions() {
@@ -463,7 +465,7 @@ function deleteDepartment() {
                 choices: function() {
                     let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
-                        choice = { name: `${results[i].name}`, value: results[i].id }
+                        choice = { name: `${results[i].name}`, value: results[i].id };
                         choiceArray.push(choice);
                     }
                     choiceArray.push("GO BACK.");
@@ -479,16 +481,16 @@ function deleteDepartment() {
                         if (err) {
                             console.log(err.sqlMessage);
                             connection.end();
-                            selectDeleteActions()
+                            selectDeleteActions();
                         } else {
                             connection.end();
                             console.log("Department removed successfully.");
                             start();
                         }
-                    })
+                    });
                 }
-            })
-    })
+            });
+    });
 }
 
 function deleteRole() {
@@ -502,7 +504,7 @@ function deleteRole() {
                 choices: function() {
                     let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
-                        choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id }
+                        choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
                     choiceArray.push("GO BACK.");
@@ -518,16 +520,16 @@ function deleteRole() {
                         if (err) {
                             console.log(err.sqlMessage);
                             connection.end();
-                            selectDeleteActions()
+                            selectDeleteActions();
                         } else {
                             connection.end();
                             console.log("Role removed successfully.");
                             start();
                         }
-                    })
+                    });
                 }
-            })
-    })
+            });
+    });
 }
 
 function deleteEmployee() {
@@ -541,7 +543,7 @@ function deleteEmployee() {
                 choices: function() {
                     let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
-                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                        choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id };
                         choiceArray.push(choice);
                     }
                     choiceArray.push("GO BACK.");
@@ -557,14 +559,14 @@ function deleteEmployee() {
                         if (err) {
                             console.log(err.sqlMessage);
                             connection.end();
-                            selectDeleteActions()
+                            selectDeleteActions();
                         } else {
                             connection.end();
                             console.log("Employee record removed successfully.");
                             start();
                         }
-                    })
+                    });
                 }
-            })
-    })
+            });
+    });
 }

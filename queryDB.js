@@ -1,4 +1,5 @@
-//Declare queries
+/*jshint esversion: 6 */
+
 const retrieveDepartmentsQuery = `select 
 department.*, budget.total_budget
 from
@@ -66,4 +67,4 @@ module.exports = {
     retrieveEmployeesQuery,
     retrieveManagersQuery,
     retrieveEmployeesByManagersQuery
-}
+};
