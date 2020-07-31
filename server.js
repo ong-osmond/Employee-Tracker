@@ -24,7 +24,7 @@ function start() {
             name: "action",
             type: "list",
             message: "Would you like to [VIEW], [ADD], [UPDATE] or [DELETE] departments, roles or employees? (CTRL+C to exit.)",
-            choices: ["VIEW", "ADD", "UPDATE", "DELETE"]
+            choices: ["VIEW", "ADD", "UPDATE", "DELETE", "EXIT"]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -40,6 +40,8 @@ function start() {
                 case ("DELETE"):
                     selectDeleteActions();
                     break;
+                case ("EXIT"):
+                    return;
                 default:
                     return "You have selected an invalid action.";
             }
@@ -52,7 +54,7 @@ function selectViewActions() {
             name: "action",
             type: "list",
             message: "Would you like to view [DEPARTMENTS], [ROLES] or [EMPLOYEES]?",
-            choices: ["DEPARTMENTS", "ROLES", "EMPLOYEES", "Go back."]
+            choices: ["DEPARTMENTS", "ROLES", "EMPLOYEES", "GO BACK."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -65,7 +67,7 @@ function selectViewActions() {
                 case ("EMPLOYEES"):
                     selectViewEmployees();
                     break;
-                case ("Go back."):
+                case ("GO BACK."):
                     start();
                     break;
                 default:
@@ -100,7 +102,7 @@ function selectViewEmployees() {
             name: "action",
             type: "list",
             message: "Would you like to view [ALL] employees or employees [BY MANAGER] ?",
-            choices: ["ALL", "BY MANAGER", "Go back."]
+            choices: ["ALL", "BY MANAGER", "GO BACK."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -139,7 +141,7 @@ function viewEmployeesByManager() {
                         name: "manager_id",
                         type: "list",
                         choices: function() {
-                            var choiceArray = [];
+                            let choiceArray = [];
                             for (var i = 0; i < results.length; i++) {
                                 choice = { name: `${results[i].manager_name} (${results[i].department_name})`, value: results[i].id }
                                 choiceArray.push(choice);
@@ -171,7 +173,7 @@ function selectAddActions() {
             name: "action",
             type: "list",
             message: "Would you like to add a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
-            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "Go back."]
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "GO BACK."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -184,7 +186,7 @@ function selectAddActions() {
                 case ("EMPLOYEE"):
                     addEmployee();
                     break;
-                case ("Go back."):
+                case ("GO BACK."):
                     start();
                     break;
                 default:
@@ -232,7 +234,7 @@ function addRole() {
                     name: "department_id",
                     type: "list",
                     choices: function() {
-                        var choiceArray = [];
+                        let choiceArray = [];
                         for (var i = 0; i < results.length; i++) {
                             choice = { name: results[i].name, value: results[i].id }
                             choiceArray.push(choice);
@@ -275,7 +277,7 @@ function addEmployee() {
                     name: "role_id",
                     type: "list",
                     choices: function() {
-                        var choiceArray = [];
+                        let choiceArray = [];
                         for (var i = 0; i < results.length; i++) {
                             choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id }
                             choiceArray.push(choice);
@@ -285,15 +287,38 @@ function addEmployee() {
                     message: "What is the role of the new employee?"
                 }
             ])
-            .then(function(answer) {
-                connection.query(`insert into employee(first_name, last_name, role_id) value("${answer.first_name}", "${answer.last_name}", ${answer.role_id})
-            `, function(err, results) {
-                    if (err) throw err;
-                    console.log("Employee added successfully.");
-                    connection.end();
-                    start();
-                })
-            })
+            .then(
+                function(employee) {
+                    connection.query(queries.retrieveEmployeesQuery, function(err, results) {
+                        if (err) throw err;
+                        inquirer
+                            .prompt([{
+                                name: "manager_id",
+                                type: "list",
+                                choices: function() {
+                                    let choiceArray = [];
+                                    for (var i = 0; i < results.length; i++) {
+                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                                        choiceArray.push(choice);
+                                    }
+                                    choiceArray.push({ name: `No manager.`, value: null }); //No manager
+                                    return choiceArray;
+                                },
+                                message: "Who is the new employee's manager?"
+                            }])
+                            .then(
+                                function(manager) {
+                                    connection.query(`insert into employee(first_name, last_name, role_id, manager_id) value("${employee.first_name}", "${employee.last_name}", ${employee.role_id}, ${manager.manager_id})
+                            `, function(err, results) {
+                                        if (err) throw err;
+                                        console.log("Employee added successfully.");
+                                        connection.end();
+                                        start();
+                                    })
+                                })
+                    })
+                }
+            )
     })
 }
 
@@ -304,17 +329,17 @@ function selectUpdateActions() {
             name: "action",
             type: "list",
             message: "Would you like to update an employee's [ROLE] or [MANAGER]?",
-            choices: ["ROLE", "MANAGER", "Go back."]
+            choices: ["EMPLOYEE ROLE", "EMPLOYEE MANAGER", "GO BACK."]
         })
         .then(function(answer) {
             switch (answer.action) {
-                case ("ROLE"):
+                case ("EMPLOYEE ROLE"):
                     updateEmployeeRole();
                     break;
-                case ("MANAGER"):
+                case ("EMPLOYEE MANAGER"):
                     updateEmployeeManager();
                     break;
-                case ("Go back."):
+                case ("GO BACK."):
                     start();
                     break;
                 default:
@@ -332,41 +357,47 @@ function updateEmployeeRole() {
                 name: "employee_id",
                 type: "list",
                 choices: function() {
-                    var choiceArray = [];
+                    let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
                         choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
                         choiceArray.push(choice);
                     }
+                    choiceArray.push("GO BACK.");
                     return choiceArray;
                 },
                 message: "Which employee requires a role update?"
             }])
             .then(function(employee) {
-                connection.query(queries.retrieveRolesQuery, function(err, results) {
-                    if (err) throw err;
-                    inquirer
-                        .prompt([{
-                            name: "role_id",
-                            type: "list",
-                            choices: function() {
-                                var choiceArray = [];
-                                for (var i = 0; i < results.length; i++) {
-                                    choice = { name: `New role: ${results[i].title} (${results[i].department_name})`, value: results[i].id }
-                                    choiceArray.push(choice);
-                                }
-                                return choiceArray;
-                            },
-                            message: "What is the employee's new role?"
-                        }])
-                        .then(function(role) {
-                            connection.query(`Update employee set role_id = ${role.role_id} where id = ${employee.employee_id}`, function(err, results) {
-                                if (err) throw err;
-                                connection.end();
-                                console.log("Employee updated successfully.");
-                                start();
+                if (employee.employee_id == "GO BACK.") {
+                    connection.end();
+                    selectUpdateActions();
+                } else {
+                    connection.query(queries.retrieveRolesQuery, function(err, results) {
+                        if (err) throw err;
+                        inquirer
+                            .prompt([{
+                                name: "role_id",
+                                type: "list",
+                                choices: function() {
+                                    let choiceArray = [];
+                                    for (var i = 0; i < results.length; i++) {
+                                        choice = { name: `New role: ${results[i].title} (${results[i].department_name})`, value: results[i].id }
+                                        choiceArray.push(choice);
+                                    }
+                                    return choiceArray;
+                                },
+                                message: "What is the employee's new role?"
+                            }])
+                            .then(function(role) {
+                                connection.query(`Update employee set role_id = ${role.role_id} where id = ${employee.employee_id}`, function(err, results) {
+                                    if (err) throw err;
+                                    connection.end();
+                                    console.log("Employee updated successfully.");
+                                    start();
+                                })
                             })
-                        })
-                })
+                    })
+                }
             })
     })
 }
@@ -380,42 +411,48 @@ function updateEmployeeManager() {
                 name: "employee_id",
                 type: "list",
                 choices: function() {
-                    var choiceArray = [];
+                    let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
                         choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
                         choiceArray.push(choice);
                     }
+                    choiceArray.push("GO BACK.");
                     return choiceArray;
                 },
                 message: "Which employee requires a manager update?"
             }])
             .then(function(employee) {
-                connection.query(`select managers.* from (${queries.retrieveEmployeesQuery}) as managers where id <> ${employee.employee_id};`, function(err, results) {
-                    if (err) throw err;
-                    inquirer
-                        .prompt([{
-                            name: "manager_id",
-                            type: "list",
-                            choices: function() {
-                                var choiceArray = [];
-                                for (var i = 0; i < results.length; i++) {
-                                    choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
-                                    choiceArray.push(choice);
-                                }
-                                choiceArray.push({ name: `No manager.`, value: null }); //No manager
-                                return choiceArray;
-                            },
-                            message: "Who is the new manager?"
-                        }])
-                        .then(function(manager) {
-                            connection.query(`Update employee set manager_id = ${manager.manager_id} where id = ${employee.employee_id}`, function(err, results) {
-                                if (err) throw err;
-                                connection.end();
-                                console.log("Employee updated successfully.");
-                                start();
+                if (employee.employee_id == "GO BACK.") {
+                    connection.end();
+                    selectUpdateActions();
+                } else {
+                    connection.query(`select managers.* from (${queries.retrieveEmployeesQuery}) as managers where id <> ${employee.employee_id};`, function(err, results) {
+                        if (err) throw err;
+                        inquirer
+                            .prompt([{
+                                name: "manager_id",
+                                type: "list",
+                                choices: function() {
+                                    let choiceArray = [];
+                                    for (var i = 0; i < results.length; i++) {
+                                        choice = { name: `New manager: ${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
+                                        choiceArray.push(choice);
+                                    }
+                                    choiceArray.push({ name: `No manager.`, value: null }); //No manager
+                                    return choiceArray;
+                                },
+                                message: "Who is the new manager?"
+                            }])
+                            .then(function(manager) {
+                                connection.query(`Update employee set manager_id = ${manager.manager_id} where id = ${employee.employee_id}`, function(err, results) {
+                                    if (err) throw err;
+                                    connection.end();
+                                    console.log("Employee updated successfully.");
+                                    start();
+                                })
                             })
-                        })
-                })
+                    })
+                }
             })
     })
 }
@@ -426,7 +463,7 @@ function selectDeleteActions() {
             name: "action",
             type: "list",
             message: "Would you like to delete a [DEPARTMENT], [ROLE] or [EMPLOYEE]?",
-            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "Go back."]
+            choices: ["DEPARTMENT", "ROLE", "EMPLOYEE", "GO BACK."]
         })
         .then(function(answer) {
             switch (answer.action) {
@@ -439,7 +476,7 @@ function selectDeleteActions() {
                 case ("EMPLOYEE"):
                     deleteEmployee();
                     break;
-                case ("Go back."):
+                case ("GO BACK."):
                     start();
                     break;
                 default:
@@ -457,21 +494,32 @@ function deleteDepartment() {
                 name: "department_id",
                 type: "list",
                 choices: function() {
-                    var choiceArray = [];
+                    let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
                         choice = { name: `${results[i].name}`, value: results[i].id }
                         choiceArray.push(choice);
                     }
+                    choiceArray.push("GO BACK.");
                     return choiceArray;
                 },
                 message: "Which department record is to be deleted? (Note: You cannot remove a department that currently has employees.)"
             }]).then(function(answer) {
-                connection.query(`Delete from department where id = ${answer.department_id}`, function(err, results) {
-                    if (err) throw err;
+                if (answer == "GO BACK.") {
                     connection.end();
-                    console.log("Department removed successfully.");
-                    start();
-                })
+                    selectDeleteActions();
+                } else {
+                    connection.query(`Delete from department where id = ${answer.department_id}`, function(err, results) {
+                        if (err) {
+                            console.log(err.sqlMessage);
+                            connection.end();
+                            selectDeleteActions()
+                        } else {
+                            connection.end();
+                            console.log("Department removed successfully.");
+                            start();
+                        }
+                    })
+                }
             })
     })
 }
@@ -485,21 +533,32 @@ function deleteRole() {
                 name: "role_id",
                 type: "list",
                 choices: function() {
-                    var choiceArray = [];
+                    let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
                         choice = { name: `${results[i].title} (${results[i].department_name})`, value: results[i].id }
                         choiceArray.push(choice);
                     }
+                    choiceArray.push("GO BACK.");
                     return choiceArray;
                 },
                 message: "Which role record is to be deleted? (Note: You cannot remove a role that is currently assigned to an employee.)"
             }]).then(function(answer) {
-                connection.query(`Delete from role where id = ${answer.role_id}`, function(err, results) {
-                    if (err) throw err;
+                if (answer == "GO BACK.") {
                     connection.end();
-                    console.log("Role removed successfully.");
-                    start();
-                })
+                    selectDeleteActions();
+                } else {
+                    connection.query(`Delete from role where id = ${answer.role_id}`, function(err, results) {
+                        if (err) {
+                            console.log(err.sqlMessage);
+                            connection.end();
+                            selectDeleteActions()
+                        } else {
+                            connection.end();
+                            console.log("Role removed successfully.");
+                            start();
+                        }
+                    })
+                }
             })
     })
 }
@@ -513,21 +572,32 @@ function deleteEmployee() {
                 name: "employee_id",
                 type: "list",
                 choices: function() {
-                    var choiceArray = [];
+                    let choiceArray = [];
                     for (var i = 0; i < results.length; i++) {
                         choice = { name: `${results[i].first_name} ${results[i].last_name} (${results[i].department_name})`, value: results[i].id }
                         choiceArray.push(choice);
                     }
+                    choiceArray.push("GO BACK.");
                     return choiceArray;
                 },
                 message: "Which employee record is to be deleted? (Note: You cannot remove a manager record with current staff members.)"
             }]).then(function(answer) {
-                connection.query(`Delete from employee where id = ${answer.employee_id}`, function(err, results) {
-                    if (err) throw err;
+                if (answer == "GO BACK.") {
                     connection.end();
-                    console.log("Employee record removed successfully.");
-                    start();
-                })
+                    selectDeleteActions();
+                } else {
+                    connection.query(`Delete from employee where id = ${answer.employee_id}`, function(err, results) {
+                        if (err) {
+                            console.log(err.sqlMessage);
+                            connection.end();
+                            selectDeleteActions()
+                        } else {
+                            connection.end();
+                            console.log("Employee record removed successfully.");
+                            start();
+                        }
+                    })
+                }
             })
     })
 }
