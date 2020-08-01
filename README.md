@@ -22,8 +22,9 @@ This is the link to a video demonstrating the application: https://drive.google.
 4. Install the Inquirer module by typing in "NPM INSTALL INQUIRER".
 5. Install the MYSQL module by typing in "NPM INSTALL MYSQL".
 6. (Optional) For better display of tables on Git Bash or the Command Line tool, install CONSOLE.TABLE by typing in "NPM INSTALL CONSOLE.TABLE".
-7. Install MySQL Server on your machine. Set the host to "localhost" and the port to "localhost". Create a user with Standard Authentication Type. This user's name and password will be used to initiate the app.
+7. Install MySQL Server on your machine. Set the host to "localhost" and the port to "3306". Create a user with Standard Authentication Type. This user's name and password will be used to initiate the app.
 8. On the project's lib folder, use the "SEED.SQL" file to create the employee database and set up initial data.
+9. Start your MySQL server before using the app. 
 
 ## Usage: 
 
