@@ -21,8 +21,7 @@ This is the link to a video demonstrating the application: https://drive.google.
 3. Open Git Bash or any Command Line tool and type in "NPM INSTALL". 
 4. Install the Inquirer module by typing in "NPM INSTALL INQUIRER".
 5. Install the MYSQL module by typing in "NPM INSTALL MYSQL".
-6. (Optional) For better display of tables on Git Bash or the Command Line tool, install CONSOLE.TABLE by typing in 
-CONSOLE.TABLE".
+6. (Optional) For better display of tables on Git Bash or the Command Line tool, install CONSOLE.TABLE by typing in "NPM INSTALL CONSOLE.TABLE".
 7. Install MySQL Server on your machine. Set the host to "localhost" and the port to "localhost". Create a user with Standard Authentication Type. This user's name and password will be used to initiate the app.
 8. On the project's lib folder, use the "SEED.SQL" file to create the employee database and set up initial data.
 
@@ -38,7 +37,7 @@ CONSOLE.TABLE".
 ![View](/assets/img/03-View-All-Employees.png)
 
 4. The UPDATE feature allows you to edit an employee's role or manager:
-![View](/assets/img/04-Update-Employees-Options.png)
+![Update](/assets/img/04-Update-Employees-Options.png)
 
 5. When adding a department, role or employee, all inputs are required.
 
