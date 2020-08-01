@@ -48,7 +48,7 @@ VALUES
     ("King", 100, (select id from department where name = "Gondor")),
     ("Ranger", 90, (select id from department where name = "Gondor")),
     ("Ring-bearer", 100, (select id from department where name = "Hobbits")),
-    ("Wizard", 100, (select id from department where name = "Wizards"))
+    ("Wizard", 90, (select id from department where name = "Wizards"))
 ;
 
 select role.id, role.title, role.salary, role.department_id, department.name

@@ -35,8 +35,8 @@ function initialiseApp() {
                     start();
                 }
             });
-        })
-};
+        });
+}
 
 // Create the connection information for the SQL database
 function getConnection(connectionSettings) {
