@@ -500,7 +500,7 @@ function deleteDepartment() {
                 },
                 message: "Which department record is to be deleted? (Note: You cannot remove a department that currently has employees.)"
             }]).then(function(answer) {
-                if (answer == "< GO BACK") {
+                if (answer.department_id == "< GO BACK") {
                     connection.end();
                     selectDeleteActions();
                 } else {
@@ -540,7 +540,7 @@ function deleteRole() {
                 },
                 message: "Which role record is to be deleted? (Note: You cannot remove a role that is currently assigned to an employee.)"
             }]).then(function(answer) {
-                if (answer == "< GO BACK") {
+                if (answer.role_id == "< GO BACK") {
                     connection.end();
                     selectDeleteActions();
                 } else {
@@ -580,7 +580,7 @@ function deleteEmployee() {
                 },
                 message: "Which employee record is to be deleted? (Note: You cannot remove a manager record with current staff members.)"
             }]).then(function(answer) {
-                if (answer == "< GO BACK") {
+                if (answer.employee_id == "< GO BACK") {
                     connection.end();
                     selectDeleteActions();
                 } else {
